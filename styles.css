@@ -1,24 +1,28 @@
 body {
   font-family: Arial, sans-serif;
   padding: 40px;
+  background: #f0f0f0;
 }
 
-.items {
-  display: flex;
-  gap: 20px;
-  overflow-x: auto;
-  padding: 10px;
-  border: 2px solid #ccc;
+.container {
   width: 500px;
-  height: 100px;
-  white-space: nowrap;
+  height: 300px;
+  margin: 0 auto;
+  border: 3px solid #444;
+  position: relative;
+  background-color: #fff;
 }
 
-.item {
-  background: #3498db;
-  color: white;
-  padding: 15px 25px;
-  border-radius: 5px;
+.cube {
+  width: 80px;
+  height: 80px;
+  background-color: #3498db;
+  border-radius: 6px;
+  position: absolute;
   cursor: grab;
-  user-select: none;
+  transition: background-color 0.2s;
+}
+
+.cube:hover {
+  background-color: #2980b9;
 }

@@ -1,36 +1,52 @@
-const itemsContainer = document.getElementById('items');
-let draggedItem = null;
+const container = document.getElementById('container');
+const cubes = document.querySelectorAll('.cube');
+const containerRect = container.getBoundingClientRect();
 
-document.querySelectorAll('.item').forEach(item => {
-  item.addEventListener('dragstart', () => {
-    draggedItem = item;
-  });
+let activeCube = null;
+let offsetX = 0;
+let offsetY = 0;
 
-  item.addEventListener('dragend', () => {
-    draggedItem = null;
+// Arrange cubes in initial grid
+const gap = 10;
+const size = 80;
+cubes.forEach((cube, index) => {
+  const cols = 2;
+  const row = Math.floor(index / cols);
+  const col = index % cols;
+  cube.style.left = `${col * (size + gap)}px`;
+  cube.style.top = `${row * (size + gap)}px`;
+});
+
+// Event handlers
+cubes.forEach(cube => {
+  cube.addEventListener('mousedown', (e) => {
+    activeCube = cube;
+    const rect = cube.getBoundingClientRect();
+    offsetX = e.clientX - rect.left;
+    offsetY = e.clientY - rect.top;
+
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
   });
 });
 
-itemsContainer.addEventListener('dragover', (e) => {
-  e.preventDefault();
-  const afterElement = getDragAfterElement(itemsContainer, e.clientX);
-  if (afterElement == null) {
-    itemsContainer.appendChild(draggedItem);
-  } else {
-    itemsContainer.insertBefore(draggedItem, afterElement);
-  }
-});
+function onMouseMove(e) {
+  if (!activeCube) return;
 
-function getDragAfterElement(container, x) {
-  const draggableElements = [...container.querySelectorAll('.item:not(.dragging)')];
+  const containerRect = container.getBoundingClientRect();
+  let x = e.clientX - containerRect.left - offsetX;
+  let y = e.clientY - containerRect.top - offsetY;
 
-  return draggableElements.reduce((closest, child) => {
-    const box = child.getBoundingClientRect();
-    const offset = x - box.left - box.width / 2;
-    if (offset < 0 && offset > closest.offset) {
-      return { offset, element: child };
-    } else {
-      return closest;
-    }
-  }, { offset: Number.NEGATIVE_INFINITY }).element;
+  // Boundaries
+  x = Math.max(0, Math.min(x, container.clientWidth - size));
+  y = Math.max(0, Math.min(y, container.clientHeight - size));
+
+  activeCube.style.left = `${x}px`;
+  activeCube.style.top = `${y}px`;
+}
+
+function onMouseUp() {
+  activeCube = null;
+  document.removeEventListener('mousemove', onMouseMove);
+  document.removeEventListener('mouseup', onMouseUp);
 }
