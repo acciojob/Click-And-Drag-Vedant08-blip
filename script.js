@@ -1,53 +1,36 @@
-// Your code here.
-const container = document.querySelector(".container");
-const cubes = document.querySelectorAll(".cube");
+const itemsContainer = document.getElementById('items');
+let draggedItem = null;
 
-let activeCube = null;
-let offsetX = 0;
-let offsetY = 0;
+document.querySelectorAll('.item').forEach(item => {
+  item.addEventListener('dragstart', () => {
+    draggedItem = item;
+  });
 
-// Set initial positions in a grid layout
-const gridCols = 4;
-const gap = 10;
-const cubeSize = 80;
-cubes.forEach((cube, i) => {
-  const col = i % gridCols;
-  const row = Math.floor(i / gridCols);
-  cube.style.left = `${col * (cubeSize + gap)}px`;
-  cube.style.top = `${row * (cubeSize + gap)}px`;
-});
-
-cubes.forEach(cube => {
-  cube.addEventListener("mousedown", (e) => {
-    activeCube = cube;
-    const rect = cube.getBoundingClientRect();
-    const containerRect = container.getBoundingClientRect();
-    offsetX = e.clientX - rect.left;
-    offsetY = e.clientY - rect.top;
-
-    document.addEventListener("mousemove", onMouseMove);
-    document.addEventListener("mouseup", onMouseUp);
+  item.addEventListener('dragend', () => {
+    draggedItem = null;
   });
 });
 
-function onMouseMove(e) {
-  if (!activeCube) return;
+itemsContainer.addEventListener('dragover', (e) => {
+  e.preventDefault();
+  const afterElement = getDragAfterElement(itemsContainer, e.clientX);
+  if (afterElement == null) {
+    itemsContainer.appendChild(draggedItem);
+  } else {
+    itemsContainer.insertBefore(draggedItem, afterElement);
+  }
+});
 
-  const containerRect = container.getBoundingClientRect();
+function getDragAfterElement(container, x) {
+  const draggableElements = [...container.querySelectorAll('.item:not(.dragging)')];
 
-  let x = e.clientX - containerRect.left - offsetX;
-  let y = e.clientY - containerRect.top - offsetY;
-
-  // Clamp within container
-  x = Math.max(0, Math.min(x, container.clientWidth - cubeSize));
-  y = Math.max(0, Math.min(y, container.clientHeight - cubeSize));
-
-  activeCube.style.left = `${x}px`;
-  activeCube.style.top = `${y}px`;
-}
-
-function onMouseUp() {
-  document.removeEventListener("mousemove", onMouseMove);
-  document.removeEventListener("mouseup", onMouseUp);
-  activeCube = null;
+  return draggableElements.reduce((closest, child) => {
+    const box = child.getBoundingClientRect();
+    const offset = x - box.left - box.width / 2;
+    if (offset < 0 && offset > closest.offset) {
+      return { offset, element: child };
+    } else {
+      return closest;
+    }
+  }, { offset: Number.NEGATIVE_INFINITY }).element;
 }
